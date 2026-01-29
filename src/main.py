@@ -33,22 +33,28 @@ class Automata:
         PL = 0
         SO = 1
         LT = 2
-        LIFETIME = 10
-        NE_SOIL: int = 20
-        OWN_SOIL: int = 10
+        LIFETIME = 1
+        SOIL_COST = 10
+        NE_SOIL: int = 80
+        OWN_SOIL: int = 20
         PLANT_LIMIT = 255
-        for i in range(len(cell_map)):
-            for j in range(len(cell_map)):
+        MIN_PLANT_MATURITY = 64
+        MIN_SOIL = -64
+        for i in range(SIZE):
+            for j in range(SIZE):
                 cell = cell_map[i][j]
                 neighboors  = [
                     (i-1, j-1), (i-1, j), (i-1, j+1),
                     (i, j-1), (i, j+1),
                     (i+1, j-1), (i+1, j), (i+1, j+1)
                 ]
-                if cell[PL] > 0 and cell[PL] <= 255 and cell[LT] != 0:
+                if cell[PL] > 0 and cell[PL] <= PLANT_LIMIT and cell[LT] != 0 and cell[SO] > 0:
                     soil_calc = cell[SO]//OWN_SOIL + cell[SO]%OWN_SOIL
                     cell_map_buffer[i][j][PL] += soil_calc
                     cell_map_buffer[i][j][SO] -= soil_calc
+                
+                if cell[SO] <= 0:
+                    cell_map_buffer[i][j][LT] = 0
                     
                 if cell[LT] > 0:
                     cell_map_buffer[i][j][LT] -= 1
@@ -56,25 +62,22 @@ class Automata:
                 if cell[LT] == 0:
                     cell_map_buffer[i][j][SO] += cell[PL]
                     cell_map_buffer[i][j][PL] = 0
-                    cell_map_buffer[i][j][LT] = -1
                 
-                if cell[SO] <= 0 and cell[LT] == -1:
-                    cell_map_buffer[i][j][LT] = LIFETIME #* (cell[PL]//100 + cell[PL]%100)
-                    cell[LT] = LIFETIME
-                    
                 for ne in neighboors:
                     l, c = ne[0], ne[1]
                     if l < 0 or l > SIZE-1 or c < 0 or c > SIZE-1:
                         break
                     ne_cell = cell_map[l][c]
-                    if ne_cell[SO] > 16 and ne_cell[PL] == 0 and cell[PL] >= 64 and cell[LT] != 0:
-                        cell_map_buffer[l][c][PL] += 10
-                        cell_map_buffer[l][c][SO] -= 10
-                    if cell[PL] > 0 and cell[PL] <= PLANT_LIMIT and cell[SO] > 0 and ne_cell[SO] > 0 and cell[LT] != 0:
-                        soil_calc = ne_cell[SO]//NE_SOIL + ne_cell[SO]%NE_SOIL
+                    if ne_cell[SO] >= MIN_SOIL and ne_cell[PL] == 0 and cell[PL] >= MIN_PLANT_MATURITY:
+                        cell_map_buffer[l][c][PL] += 1
+                        cell_map_buffer[l][c][SO] -= 1
+                        cell_map_buffer[l][c][LT] += max(LIFETIME * (ne_cell[SO]//50), 0)
+                    if cell[PL] > 0 and cell[PL] <= PLANT_LIMIT and ne_cell[SO] > 0 and ne_cell[LT] != 0:
+                        ne_soil = int(2*NE_SOIL - NE_SOIL*(1 - max(cell[PL]/PLANT_LIMIT, 0)))
+                        soil_calc = ne_cell[SO]//ne_soil + ne_cell[SO]%ne_soil
                         cell_map_buffer[i][j][PL] += soil_calc
                         cell_map_buffer[l][c][SO] -= soil_calc
-                    
+                
     @staticmethod
     def cell_draw_transform(cell_map, camera_x, camera_y, camera_zoom):
         soil_color_low = (241, 218, 198)
@@ -106,7 +109,7 @@ class Automata:
     def generate_population(self, quantity=5):
         for i in range(self.size):
             for j in range(self.size):
-                self.cell_map[i][j][1] = random.randint(128, 255)
+                self.cell_map[i][j][1] = random.randint(64, 128)
                 self.cell_map[i][j][2] = -1
         for n in range(quantity):
             i, j = random.randint(0, self.size-1), random.randint(0, self.size-1)
