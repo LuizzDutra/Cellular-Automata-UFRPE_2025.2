@@ -33,13 +33,13 @@ class Automata:
         PL = 0
         SO = 1
         LT = 2
-        LIFETIME = 1
-        SOIL_COST = 10
-        NE_SOIL: int = 80
-        OWN_SOIL: int = 20
+        LIFETIME = 3
+        SOIL_COST = 20
+        NE_SOIL_SCALE = 1/2
         PLANT_LIMIT = 255
+        SOIL_SCALE = 0.25
         MIN_PLANT_MATURITY = 64
-        MIN_SOIL = -64
+        MIN_SOIL = 4
         for i in range(SIZE):
             for j in range(SIZE):
                 cell = cell_map[i][j]
@@ -49,11 +49,13 @@ class Automata:
                     (i+1, j-1), (i+1, j), (i+1, j+1)
                 ]
                 if cell[PL] > 0 and cell[PL] <= PLANT_LIMIT and cell[LT] != 0 and cell[SO] > 0:
-                    soil_calc = cell[SO]//OWN_SOIL + cell[SO]%OWN_SOIL
+                    f = SOIL_SCALE
+                    soil_calc = SOIL_COST * (f + (1-f) * cell[PL]/PLANT_LIMIT)
+                    #soil_calc = SOIL_COST
                     cell_map_buffer[i][j][PL] += soil_calc
                     cell_map_buffer[i][j][SO] -= soil_calc
                 
-                if cell[SO] <= 0:
+                if cell[SO] < 0 and 0:
                     cell_map_buffer[i][j][LT] = 0
                     
                 if cell[LT] > 0:
@@ -71,10 +73,11 @@ class Automata:
                     if ne_cell[SO] >= MIN_SOIL and ne_cell[PL] == 0 and cell[PL] >= MIN_PLANT_MATURITY:
                         cell_map_buffer[l][c][PL] += 1
                         cell_map_buffer[l][c][SO] -= 1
-                        cell_map_buffer[l][c][LT] += max(LIFETIME * (ne_cell[SO]//50), 0)
+                        cell_map_buffer[l][c][LT] += LIFETIME * max(LIFETIME * (ne_cell[SO]//50), 0)
                     if cell[PL] > 0 and cell[PL] <= PLANT_LIMIT and ne_cell[SO] > 0 and ne_cell[LT] != 0:
-                        ne_soil = int(2*NE_SOIL - NE_SOIL*(1 - max(cell[PL]/PLANT_LIMIT, 0)))
-                        soil_calc = ne_cell[SO]//ne_soil + ne_cell[SO]%ne_soil
+                        #soil_calc = ne_cell[SO]/16
+                        f = SOIL_SCALE
+                        soil_calc = SOIL_COST*NE_SOIL_SCALE * (f + (1-f) * cell[PL]/PLANT_LIMIT)
                         cell_map_buffer[i][j][PL] += soil_calc
                         cell_map_buffer[l][c][SO] -= soil_calc
                 
@@ -109,8 +112,8 @@ class Automata:
     def generate_population(self, quantity=5):
         for i in range(self.size):
             for j in range(self.size):
-                self.cell_map[i][j][1] = random.randint(64, 128)
-                self.cell_map[i][j][2] = -1
+                self.cell_map[i][j][1] = random.randint(100, 168)
+                self.cell_map[i][j][2] = 10
         for n in range(quantity):
             i, j = random.randint(0, self.size-1), random.randint(0, self.size-1)
             print(f"{i}, {j}")
@@ -139,13 +142,14 @@ def main():
 
         screen.fill(BG_COLOR)
         
-        automata.cell_draw_transform(automata.cell_map, CAMERA.x, CAMERA.y, CAMERA.zoom) 
+        if counter > 2000:
+            automata.cell_draw_transform(automata.cell_map, CAMERA.x, CAMERA.y, CAMERA.zoom) 
         
         pg.display.flip()
         
         print(counter)
         counter += 1
-        clock.tick(100)
+        clock.tick(500)
 
 
 
