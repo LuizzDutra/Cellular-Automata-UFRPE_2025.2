@@ -35,11 +35,11 @@ class Automata:
         LT = 2
         LIFETIME = 3
         SOIL_COST = 20
-        NE_SOIL_SCALE = 1/2
+        NE_SOIL_SCALE = 1/4
         PLANT_LIMIT = 255
-        SOIL_SCALE = 0.25
+        SOIL_SCALE = 0.5
         MIN_PLANT_MATURITY = 64
-        MIN_SOIL = 4
+        MIN_SOIL = 16
         for i in range(SIZE):
             for j in range(SIZE):
                 cell = cell_map[i][j]
@@ -62,7 +62,7 @@ class Automata:
                     cell_map_buffer[i][j][LT] -= 1
                 
                 if cell[LT] == 0:
-                    cell_map_buffer[i][j][SO] += cell[PL]
+                    cell_map_buffer[i][j][SO] += cell_map_buffer[i][j][PL]
                     cell_map_buffer[i][j][PL] = 0
                 
                 for ne in neighboors:
@@ -73,7 +73,8 @@ class Automata:
                     if ne_cell[SO] >= MIN_SOIL and ne_cell[PL] == 0 and cell[PL] >= MIN_PLANT_MATURITY:
                         cell_map_buffer[l][c][PL] += 1
                         cell_map_buffer[l][c][SO] -= 1
-                        cell_map_buffer[l][c][LT] += LIFETIME * max(LIFETIME * (ne_cell[SO]//50), 0)
+                        if cell_map_buffer[l][c][LT] < 1:
+                            cell_map_buffer[l][c][LT] += LIFETIME + max(LIFETIME * (int(ne_cell[SO]*0.02)), 0)
                     if cell[PL] > 0 and cell[PL] <= PLANT_LIMIT and ne_cell[SO] > 0 and ne_cell[LT] != 0:
                         #soil_calc = ne_cell[SO]/16
                         f = SOIL_SCALE
@@ -112,12 +113,13 @@ class Automata:
     def generate_population(self, quantity=5):
         for i in range(self.size):
             for j in range(self.size):
-                self.cell_map[i][j][1] = random.randint(100, 168)
-                self.cell_map[i][j][2] = 10
+                self.cell_map[i][j][1] = random.randint(100, 160)
+                self.cell_map[i][j][2] = 0
         for n in range(quantity):
             i, j = random.randint(0, self.size-1), random.randint(0, self.size-1)
             print(f"{i}, {j}")
             self.cell_map[i][j][0] = 128
+            self.cell_map[i][j][2] = 10
             
     def tick(self):
         self.cell_map_buffer = np.copy(self.cell_map)
@@ -140,9 +142,9 @@ def main():
         
         automata.tick()
 
-        screen.fill(BG_COLOR)
         
-        if counter > 2000:
+        if counter % 100 == 0:
+            screen.fill(BG_COLOR)
             automata.cell_draw_transform(automata.cell_map, CAMERA.x, CAMERA.y, CAMERA.zoom) 
         
         pg.display.flip()
