@@ -3,7 +3,7 @@ import numpy as np
 import numba
 import random
 
-screen_width, screen_height = 900, 900
+screen_width, screen_height = 800, 800
 screen = pg.display.set_mode((screen_width, screen_height))
 pg.display.set_caption("Some cells")
 BG_COLOR = (0, 0, 0)
@@ -25,7 +25,8 @@ class Automata:
         self.size = size
         self.cell_map = np.zeros(shape=(size, size, 3))
         self.cell_map_buffer = np.empty_like(self.cell_map)
-        self.generate_population(20)
+        self.soil_range: tuple[int, int] = (100, 160)
+        self.generate_population(5)
   
     @staticmethod
     @numba.njit()
@@ -37,50 +38,55 @@ class Automata:
         SOIL_COST = 20
         NE_SOIL_SCALE = 1/4
         PLANT_LIMIT = 255
-        SOIL_SCALE = 0.5
-        MIN_PLANT_MATURITY = 64
+        SOIL_SCALE = 0.25
+        MIN_PLANT_MATURITY = 128
         MIN_SOIL = 16
+        
         for i in range(SIZE):
             for j in range(SIZE):
                 cell = cell_map[i][j]
+                fertilized = False
                 neighboors  = [
                     (i-1, j-1), (i-1, j), (i-1, j+1),
                     (i, j-1), (i, j+1),
                     (i+1, j-1), (i+1, j), (i+1, j+1)
                 ]
-                if cell[PL] > 0 and cell[PL] <= PLANT_LIMIT and cell[LT] != 0 and cell[SO] > 0:
-                    f = SOIL_SCALE
-                    soil_calc = SOIL_COST * (f + (1-f) * cell[PL]/PLANT_LIMIT)
-                    #soil_calc = SOIL_COST
-                    cell_map_buffer[i][j][PL] += soil_calc
-                    cell_map_buffer[i][j][SO] -= soil_calc
-                
-                if cell[SO] < 0 and 0:
-                    cell_map_buffer[i][j][LT] = 0
-                    
-                if cell[LT] > 0:
-                    cell_map_buffer[i][j][LT] -= 1
-                
-                if cell[LT] == 0:
-                    cell_map_buffer[i][j][SO] += cell_map_buffer[i][j][PL]
-                    cell_map_buffer[i][j][PL] = 0
+                #Alive
+                if cell[PL] > 0:
+                    if cell[LT] > 0:
+                        if cell[PL] <= PLANT_LIMIT and cell[SO] > 0:
+                            f = SOIL_SCALE
+                            soil_calc = SOIL_COST * (f + (1-f) * cell[PL]/PLANT_LIMIT)
+                            cell_map_buffer[i][j][PL] += soil_calc
+                            cell_map_buffer[i][j][SO] -= soil_calc
+                    else:
+                        cell_map_buffer[i][j][SO] += cell[PL]
+                        cell_map_buffer[i][j][PL] = 0
                 
                 for ne in neighboors:
                     l, c = ne[0], ne[1]
                     if l < 0 or l > SIZE-1 or c < 0 or c > SIZE-1:
                         break
                     ne_cell = cell_map[l][c]
-                    if ne_cell[SO] >= MIN_SOIL and ne_cell[PL] == 0 and cell[PL] >= MIN_PLANT_MATURITY:
-                        cell_map_buffer[l][c][PL] += 1
-                        cell_map_buffer[l][c][SO] -= 1
-                        if cell_map_buffer[l][c][LT] < 1:
-                            cell_map_buffer[l][c][LT] += LIFETIME + max(LIFETIME * (int(ne_cell[SO]*0.02)), 0)
-                    if cell[PL] > 0 and cell[PL] <= PLANT_LIMIT and ne_cell[SO] > 0 and ne_cell[LT] != 0:
-                        #soil_calc = ne_cell[SO]/16
+                    #Root spread rule
+                    if ne_cell[PL] > 0 and ne_cell[PL] <= PLANT_LIMIT and ne_cell[LT] != 0 and cell[SO] > 0:
                         f = SOIL_SCALE
-                        soil_calc = SOIL_COST*NE_SOIL_SCALE * (f + (1-f) * cell[PL]/PLANT_LIMIT)
-                        cell_map_buffer[i][j][PL] += soil_calc
-                        cell_map_buffer[l][c][SO] -= soil_calc
+                        soil_calc = SOIL_COST*NE_SOIL_SCALE * (f + (1-f) * ne_cell[PL]/PLANT_LIMIT)
+                        cell_map_buffer[l][c][PL] += soil_calc
+                        cell_map_buffer[i][j][SO] -= soil_calc
+                    #Valid fertilization rule
+                    if not fertilized and cell[SO] >= MIN_SOIL and cell[PL] == 0 and ne_cell[PL] >= MIN_PLANT_MATURITY:
+                        fertilized = True
+                
+                #Creation
+                if fertilized:
+                    cell_map_buffer[i][j][PL] += 1
+                    cell_map_buffer[i][j][SO] -= 1
+                    cell_map_buffer[i][j][LT] += LIFETIME + max(LIFETIME * (int(cell[SO]*0.02)), 0) 
+
+                #Lifetime tick
+                if cell[LT] > 0:
+                    cell_map_buffer[i][j][LT] -= 1
                 
     @staticmethod
     def cell_draw_transform(cell_map, camera_x, camera_y, camera_zoom):
@@ -113,7 +119,7 @@ class Automata:
     def generate_population(self, quantity=5):
         for i in range(self.size):
             for j in range(self.size):
-                self.cell_map[i][j][1] = random.randint(100, 160)
+                self.cell_map[i][j][1] = random.randint(*self.soil_range)
                 self.cell_map[i][j][2] = 0
         for n in range(quantity):
             i, j = random.randint(0, self.size-1), random.randint(0, self.size-1)
@@ -143,7 +149,7 @@ def main():
         automata.tick()
 
         
-        if counter % 100 == 0:
+        if 0 or counter % 50 == 0:
             screen.fill(BG_COLOR)
             automata.cell_draw_transform(automata.cell_map, CAMERA.x, CAMERA.y, CAMERA.zoom) 
         
