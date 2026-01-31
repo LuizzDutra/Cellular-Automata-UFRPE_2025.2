@@ -25,25 +25,33 @@ class Automata:
         self.size = size
         self.cell_map = np.zeros(shape=(size, size, 3))
         self.cell_map_buffer = np.empty_like(self.cell_map)
-        self.soil_range: tuple[int, int] = (100, 160)
+        self.soil_range: tuple[int, int] = (160, 220)
         self.generate_population(5)
+        self.counter = 0
   
     @staticmethod
     @numba.njit()
-    def cell_calc(cell_map, cell_map_buffer):
+    def cell_calc(cell_map, cell_map_buffer, counter):
         PL = 0
         SO = 1
         LT = 2
         LIFETIME = 3
-        SOIL_COST = 20
+        SOIL_COST = 25
         NE_SOIL_SCALE = 1/4
         PLANT_LIMIT = 255
-        SOIL_SCALE = 0.25
-        MIN_PLANT_MATURITY = 128
+        SOIL_SCALE = 0.5
+        MIN_PLANT_MATURITY = 64
         MIN_SOIL = 16
+        RAIN_INTERVAL = 400
+        RAIN_AMOUNT_PER_TICK = 0.05
+        PLANT_DECAY = 0.05
+        SOIL_DECAY = 0.4
+        
         
         for i in range(SIZE):
             for j in range(SIZE):
+                if counter % RAIN_INTERVAL == 0:
+                    cell_map_buffer[i][j][SO] += RAIN_AMOUNT_PER_TICK * RAIN_INTERVAL
                 cell = cell_map[i][j]
                 fertilized = False
                 neighboors  = [
@@ -54,14 +62,22 @@ class Automata:
                 #Alive
                 if cell[PL] > 0:
                     if cell[LT] > 0:
+                        cell_map_buffer[i][j][PL] = max(0, cell_map_buffer[i][j][PL] - PLANT_DECAY)
                         if cell[PL] <= PLANT_LIMIT and cell[SO] > 0:
-                            f = SOIL_SCALE
-                            soil_calc = SOIL_COST * (f + (1-f) * cell[PL]/PLANT_LIMIT)
+                            #f = SOIL_SCALE
+                            #soil_calc = SOIL_COST * (f + (1-f) * cell[PL]/PLANT_LIMIT)
+                            a = SOIL_SCALE
+                            b = 1
+                            t = cell[PL]/PLANT_LIMIT
+                            lerp = (1 - t)*a + t*b
+                            soil_calc = SOIL_COST * lerp
                             cell_map_buffer[i][j][PL] += soil_calc
                             cell_map_buffer[i][j][SO] -= soil_calc
                     else:
                         cell_map_buffer[i][j][SO] += cell[PL]
                         cell_map_buffer[i][j][PL] = 0
+                elif cell[SO] > 0:
+                    cell_map_buffer[i][j][SO] -= SOIL_DECAY
                 
                 for ne in neighboors:
                     l, c = ne[0], ne[1]
@@ -70,8 +86,14 @@ class Automata:
                     ne_cell = cell_map[l][c]
                     #Root spread rule
                     if ne_cell[PL] > 0 and ne_cell[PL] <= PLANT_LIMIT and ne_cell[LT] != 0 and cell[SO] > 0:
-                        f = SOIL_SCALE
-                        soil_calc = SOIL_COST*NE_SOIL_SCALE * (f + (1-f) * ne_cell[PL]/PLANT_LIMIT)
+                        #f = SOIL_SCALE
+                        #soil_calc = SOIL_COST*NE_SOIL_SCALE * (f + (1-f) * ne_cell[PL]/PLANT_LIMIT)
+                        a = SOIL_SCALE
+                        b = 1
+                        t = cell[PL]/PLANT_LIMIT
+                        lerp = (1 - t)*a + t*b
+                        soil_calc = SOIL_COST*NE_SOIL_SCALE*lerp
+
                         cell_map_buffer[l][c][PL] += soil_calc
                         cell_map_buffer[i][j][SO] -= soil_calc
                     #Valid fertilization rule
@@ -128,8 +150,9 @@ class Automata:
             self.cell_map[i][j][2] = 10
             
     def tick(self):
+        self.counter += 1
         self.cell_map_buffer = np.copy(self.cell_map)
-        self.cell_calc(self.cell_map, self.cell_map_buffer)
+        self.cell_calc(self.cell_map, self.cell_map_buffer, self.counter)
         self.cell_map = self.cell_map_buffer
 
 
@@ -140,22 +163,31 @@ def main():
     running = True
     clock = pg.time.Clock()
     counter = 0
+    REALTIME = False
+    RENDER_INTERVAL = 200
     while running:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
-        
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_r:
+                    REALTIME = not REALTIME
+                if event.key == pg.K_a:
+                    RENDER_INTERVAL -= 10
+                if event.key == pg.K_d:
+                    RENDER_INTERVAL += 10
         
         automata.tick()
 
-        
-        if 0 or counter % 50 == 0:
+
+        RENDER_INTERVAL = max(10, RENDER_INTERVAL)
+        if REALTIME or counter % RENDER_INTERVAL == 0:
             screen.fill(BG_COLOR)
             automata.cell_draw_transform(automata.cell_map, CAMERA.x, CAMERA.y, CAMERA.zoom) 
         
         pg.display.flip()
         
-        print(counter)
+        print(f"\rtick: {counter} | Render interval: {RENDER_INTERVAL}      ", end='')
         counter += 1
         clock.tick(500)
 
