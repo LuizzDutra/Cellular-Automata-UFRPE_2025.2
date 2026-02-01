@@ -1,1 +1,5 @@
 *.bat
+*.aux
+*.log
+*.out
+*synctex.gz
