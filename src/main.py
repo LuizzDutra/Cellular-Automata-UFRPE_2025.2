@@ -25,7 +25,7 @@ class Automata:
         self.size = size
         self.cell_map = np.zeros(shape=(size, size, 3))
         self.cell_map_buffer = np.empty_like(self.cell_map)
-        self.soil_range: tuple[int, int] = (160, 220)
+        self.soil_range: tuple[float, float] = (0.4, 0.6)
         self.generate_population(5)
         self.counter = 0
   
@@ -35,17 +35,18 @@ class Automata:
         PL = 0
         SO = 1
         LT = 2
-        LIFETIME = 3
-        SOIL_COST = 25
+        LIFETIME_MEAN = 15
+        LIFETIME_SIGMA = 3
+        SOIL_COST = 0.1
         NE_SOIL_SCALE = 1/4
-        PLANT_LIMIT = 255
+        PLANT_LIMIT = 1
         SOIL_SCALE = 0.5
-        MIN_PLANT_MATURITY = 64
-        MIN_SOIL = 16
-        RAIN_INTERVAL = 400
-        RAIN_AMOUNT_PER_TICK = 0.05
-        PLANT_DECAY = 0.05
-        SOIL_DECAY = 0.4
+        MIN_PLANT_MATURITY = 0.25
+        MIN_SOIL = 0.0625
+        RAIN_INTERVAL = 200
+        RAIN_AMOUNT_PER_TICK = 0.0002
+        PLANT_DECAY = 0.0002
+        SOIL_DECAY = 0.0015
         
         
         for i in range(SIZE):
@@ -74,7 +75,7 @@ class Automata:
                             cell_map_buffer[i][j][PL] += soil_calc
                             cell_map_buffer[i][j][SO] -= soil_calc
                     else:
-                        cell_map_buffer[i][j][SO] += cell[PL]
+                        cell_map_buffer[i][j][SO] += cell_map_buffer[i][j][PL]
                         cell_map_buffer[i][j][PL] = 0
                 elif cell[SO] > 0:
                     cell_map_buffer[i][j][SO] -= SOIL_DECAY
@@ -85,7 +86,7 @@ class Automata:
                         break
                     ne_cell = cell_map[l][c]
                     #Root spread rule
-                    if ne_cell[PL] > 0 and ne_cell[PL] <= PLANT_LIMIT and ne_cell[LT] != 0 and cell[SO] > 0:
+                    if ne_cell[PL] > 0 and ne_cell[PL] <= PLANT_LIMIT and ne_cell[LT] > 0 and cell[SO] > 0:
                         #f = SOIL_SCALE
                         #soil_calc = SOIL_COST*NE_SOIL_SCALE * (f + (1-f) * ne_cell[PL]/PLANT_LIMIT)
                         a = SOIL_SCALE
@@ -102,9 +103,11 @@ class Automata:
                 
                 #Creation
                 if fertilized:
-                    cell_map_buffer[i][j][PL] += 1
-                    cell_map_buffer[i][j][SO] -= 1
-                    cell_map_buffer[i][j][LT] += LIFETIME + max(LIFETIME * (int(cell[SO]*0.02)), 0) 
+                    cell_map_buffer[i][j][PL] += 0.004
+                    cell_map_buffer[i][j][SO] -= 0.004
+                    cell_map_buffer[i][j][LT] += max(5, min(random.gauss(LIFETIME_MEAN, LIFETIME_SIGMA), 25))
+                    #cell_map_buffer[i][j][LT] += LIFETIME + int(max(LIFETIME * cell[SO]*10, 0))
+
 
                 #Lifetime tick
                 if cell[LT] > 0:
@@ -124,10 +127,10 @@ class Automata:
                 c_val = cell[2]
                 cell_color = (0, 0, 0)
                 if c_val[0] == 0:
-                    soil_factor = max(min(1, c_val[1]/255), 0)
+                    soil_factor = max(min(1, c_val[1]), 0)
                     cell_color = tuple([int(cl + soil_factor*(ch-cl)) for cl, ch in zip(soil_color_low, soil_color_high)])
                 elif c_val[0] > 0:
-                    plant_factor = min(1, c_val[0]/255)
+                    plant_factor = min(1, c_val[0])
                     cell_color = tuple([int(cl + plant_factor*(ch-cl)) for cl, ch in zip(plant_color_low, plant_color_high)])
                 elif c_val[0] < 0:
                     cell_color = (255, 0, 0)
@@ -141,12 +144,12 @@ class Automata:
     def generate_population(self, quantity=5):
         for i in range(self.size):
             for j in range(self.size):
-                self.cell_map[i][j][1] = random.randint(*self.soil_range)
+                self.cell_map[i][j][1] = random.uniform(*self.soil_range)
                 self.cell_map[i][j][2] = 0
         for n in range(quantity):
             i, j = random.randint(0, self.size-1), random.randint(0, self.size-1)
             print(f"{i}, {j}")
-            self.cell_map[i][j][0] = 128
+            self.cell_map[i][j][0] = 0.5
             self.cell_map[i][j][2] = 10
             
     def tick(self):
