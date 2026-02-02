@@ -1,4 +1,5 @@
 import pygame as pg
+import os
 import numpy as np
 import numba
 import random
@@ -8,8 +9,25 @@ screen = pg.display.set_mode((screen_width, screen_height))
 pg.display.set_caption("Some cells")
 BG_COLOR = (0, 0, 0)
 SEED = 42
+SAVE = False
+
 SIZE = 200
-random.seed(SEED)
+PL = 0
+SO = 1
+LT = 2
+LIFETIME_MEAN = 20
+LIFETIME_SIGMA = 2
+SOIL_COST = 0.2
+NE_SOIL_SCALE = 1/4
+PLANT_LIMIT = 1
+SOIL_SCALE = 0.25
+MIN_PLANT_MATURITY = 0.25
+MIN_SOIL = 0.0625
+RAIN_INTERVAL = 400
+RAIN_AMOUNT_PER_TICK = 0.0002
+PLANT_DECAY = 0.0002
+SOIL_DECAY = 0.0012
+
 
 class Camera:
     def __init__(self, x: int = 0, y: int = 0, zoom: float = 1.0):
@@ -31,23 +49,7 @@ class Automata:
   
     @staticmethod
     @numba.njit()
-    def cell_calc(cell_map, cell_map_buffer, counter):
-        PL = 0
-        SO = 1
-        LT = 2
-        LIFETIME_MEAN = 15
-        LIFETIME_SIGMA = 3
-        SOIL_COST = 0.1
-        NE_SOIL_SCALE = 1/4
-        PLANT_LIMIT = 1
-        SOIL_SCALE = 0.5
-        MIN_PLANT_MATURITY = 0.25
-        MIN_SOIL = 0.0625
-        RAIN_INTERVAL = 200
-        RAIN_AMOUNT_PER_TICK = 0.0002
-        PLANT_DECAY = 0.0002
-        SOIL_DECAY = 0.0015
-        
+    def cell_calc(cell_map, cell_map_buffer, counter, soil_decay): 
         
         for i in range(SIZE):
             for j in range(SIZE):
@@ -78,7 +80,7 @@ class Automata:
                         cell_map_buffer[i][j][SO] += cell_map_buffer[i][j][PL]
                         cell_map_buffer[i][j][PL] = 0
                 elif cell[SO] > 0:
-                    cell_map_buffer[i][j][SO] -= SOIL_DECAY
+                    cell_map_buffer[i][j][SO] -= soil_decay
                 
                 for ne in neighboors:
                     l, c = ne[0], ne[1]
@@ -105,7 +107,7 @@ class Automata:
                 if fertilized:
                     cell_map_buffer[i][j][PL] += 0.004
                     cell_map_buffer[i][j][SO] -= 0.004
-                    cell_map_buffer[i][j][LT] += max(5, min(random.gauss(LIFETIME_MEAN, LIFETIME_SIGMA), 25))
+                    cell_map_buffer[i][j][LT] += random.gauss(LIFETIME_MEAN, LIFETIME_SIGMA)
                     #cell_map_buffer[i][j][LT] += LIFETIME + int(max(LIFETIME * cell[SO]*10, 0))
 
 
@@ -141,33 +143,32 @@ class Automata:
                     print(cell_color)
                     input()
 
-    def generate_population(self, quantity=5):
+    def generate_population(self, quantity=5, start_strength=0.5, start_lifetime=10):
         for i in range(self.size):
             for j in range(self.size):
                 self.cell_map[i][j][1] = random.uniform(*self.soil_range)
-                self.cell_map[i][j][2] = 0
         for n in range(quantity):
             i, j = random.randint(0, self.size-1), random.randint(0, self.size-1)
             print(f"{i}, {j}")
-            self.cell_map[i][j][0] = 0.5
-            self.cell_map[i][j][2] = 10
+            self.cell_map[i][j][0] = start_strength
+            self.cell_map[i][j][2] = start_lifetime
             
     def tick(self):
         self.counter += 1
         self.cell_map_buffer = np.copy(self.cell_map)
-        self.cell_calc(self.cell_map, self.cell_map_buffer, self.counter)
+        self.cell_calc(self.cell_map, self.cell_map_buffer, self.counter, SOIL_DECAY)
         self.cell_map = self.cell_map_buffer
 
 
 
-def main():
+def main(max_steps = -1, save_iter=False):
     automata = Automata(SIZE)
     
     running = True
     clock = pg.time.Clock()
     counter = 0
     REALTIME = False
-    RENDER_INTERVAL = 200
+    RENDER_INTERVAL = 100
     while running:
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -180,21 +181,41 @@ def main():
                 if event.key == pg.K_d:
                     RENDER_INTERVAL += 10
         
-        automata.tick()
-
-
         RENDER_INTERVAL = max(10, RENDER_INTERVAL)
         if REALTIME or counter % RENDER_INTERVAL == 0:
             screen.fill(BG_COLOR)
             automata.cell_draw_transform(automata.cell_map, CAMERA.x, CAMERA.y, CAMERA.zoom) 
+            if save_iter:
+                pg.image.save(screen, f"./results/{SOIL_DECAY}/{counter}.png")
+                
+        automata.tick()
         
         pg.display.flip()
         
         print(f"\rtick: {counter} | Render interval: {RENDER_INTERVAL}      ", end='')
+        
         counter += 1
+        if max_steps != -1 and counter > max_steps:
+            running = False
         clock.tick(500)
 
 
 
 if __name__ == "__main__": 
-    main()
+    if SAVE:
+        #0.0006 #Full
+        #0.0012 #Holes
+        #0.0025 #Maze
+        #0.004 #Spots
+        soil_list = [0.0006, 0.0012, 0.0025, 0.004]
+        os.chdir("../")
+        #Result loop
+        for s in soil_list:
+            random.seed(SEED)
+            if str(s) not in os.listdir("results"):
+                os.mkdir(f"./results/{s}") 
+            SOIL_DECAY = s
+            main(max_steps=10000, save_iter=True)
+    else:
+        random.seed(SEED)
+        main()

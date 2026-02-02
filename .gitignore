@@ -1,5 +1,11 @@
+#Tex
 *.bat
 *.aux
 *.log
 *.out
 *synctex.gz
+
+venv
+
+#Used for the GIF result
+results/*/*.png
