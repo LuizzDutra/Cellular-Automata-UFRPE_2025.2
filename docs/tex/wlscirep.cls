@@ -143,6 +143,11 @@
 % article meta data
 %
 \newcommand{\keywords}[1]{\def\@keywords{#1}}
+% Adicione estes comandos para resumos em múltiplos idiomas
+\newcommand{\abstracttitle}[1]{\def\@abstracttitle{#1}}
+\newcommand{\abstracttitleen}[1]{\def\@abstracttitleen{#1}} % título em inglês
+\newcommand{\abstracten}[1]{\def\@abstracten{#1}} % resumo em inglês
+\newcommand{\keywordsen}[1]{\def\@keywordsen{#1}} % keywords em inglês
 
 \def\xabstract{abstract}
 \long\def\abstract#1\end#2{\def\two{#2}\ifx\two\xabstract 
@@ -166,9 +171,11 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \vskip10pt
 {\raggedright\sffamily\fontsize{12}{16}\selectfont  \@author\par}
 \vskip18pt%
+
+% Resumo em Português
 {%
 \noindent
-{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{\color{color1}\large\sffamily\textbf{ABSTRACT}}}
+{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{\color{color1}\large\sffamily\textbf{RESUMO}}}
 }%
 \vskip10pt
 {%
@@ -178,13 +185,38 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \sffamily\small\textbf\\\theabstract
 }%
 }%
-% \vskip18pt%
-% \noindent
-% \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
-% {\color{color1}\keywordname\hspace*{1em}} \@keywords%
-%}%
+}%
+\vskip10pt%
+\noindent
+\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+{\color{color1}\textbf{Palavras-chave:}\hspace*{1em}} \@keywords%
+}%
+
+\vskip25pt%
+
+% Abstract in English (se fornecido)
+\ifdefined\@abstracten
+{%
+\noindent
+{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{\color{color1}\large\sffamily\textbf{ABSTRACT}}}
+}%
+\vskip10pt
+{%
+\noindent
+\colorbox{color2}{%
+\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+\sffamily\small\textbf\\\@abstracten
+}%
+}%
+}%
+\vskip10pt%
+\noindent
+\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+{\color{color1}\textbf{Keywords:}\hspace*{1em}} \@keywordsen%
 }%
 \vskip25pt%
+\fi
+
 }%
 }%
 %-----------------------------------------------

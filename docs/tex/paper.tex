@@ -12,12 +12,16 @@ Universidade Federal Rural de Pernambuco – Recife, PE – Brasil}
 
 \affil[*]{luiz.dutra@ufrpe.br}
 
-%\keywords{Keyword1, Keyword2, Keyword3}
+
 
 \begin{abstract}
 Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations.
 \end{abstract}
+\keywords{Keyword1, Keyword2, Keyword3}
+
+
 \begin{document}
+
 
 \flushbottom
 \maketitle
@@ -26,8 +30,6 @@ Example Abstract. Abstract must not include subheadings or citations. Example Ab
 %  Click the title above to edit the author information and abstract
 %
 \thispagestyle{empty}
-
-\noindent Please note: Abbreviations should be introduced at the first mention in the main text – no abbreviations lists. Suggested structure of main text (not enforced) is provided below.
 
 \section*{Introdução}
 
@@ -75,7 +77,7 @@ O comportamento de cada célula é definido por um conjunto de regras que são a
 Para melhor entendimento o estado da vegetação será representado como \emph{plantState} e o estado do solo como \emph{soilState}.
 O conjunto de regras é definido em:
 
-\begin{itemize}
+\begin{enumerate}
 \item Toda célula onde \emph{plantState} > 0 e \emph{lifetime > 0}  irá absorver o \emph{soilState} de sua própria célula e de células vizinhas a partir das fórmulas \emph{f(t)}  e \emph{g(t)}, respectivamente:
 
 \emph{let} $t = plantState/plantLimit$
@@ -108,85 +110,57 @@ $\mathcal{N}(lifetime\mu, lifetime\sigma^2)$
 Esse tempo de vida determinado de forma pseudoaleatória permite introduzir elementos de imprevisibilidade na auto-organização das células.
 
 
-\end{itemize}
+\end{enumerate}
 
 
 \section*{Resultados}
-As simulações foram realizadas com 10000 iterações cada, com uma população de 5 células com \emph{plant state} igual a 0.5 e \emph{lifetime} igual a 10, em posições aleatórias,  o valor do estado do solo inicial foi distribuído de maneira aleatória uniforme no intervalo $[0.4, 0.6]$,  utilizando a mesma seed do gerador de números pseudoaleatórios com diferentes níveis de decaimento do solo a fim de analisar a formação de diferentes padrões de vegetação de acordo com estas condições.
+As simulações foram realizadas com 10000 iterações cada, com uma população de 5 células com \emph{plant state} igual a 0.5 e \emph{lifetime} igual a 10, em posições aleatórias,  o valor do estado do solo inicial foi distribuído de maneira aleatória uniforme no intervalo $[0.4, 0.6]$,  utilizando a mesma seed do gerador de números pseudoaleatórios com diferentes níveis de decaimento do solo a fim de analisar a formação de diferentes padrões de vegetação de acordo com estas condições. Todas as vegetações de cada simulação possuem as mesmas características e decaimento de solo com vegetação de \emph{0.0002}, equivalente à quantidade de precipitação por iteração.
 
-Após realizar as simulações os autômatos tiveram uma formação de padrões similares à vegetações naturais. As células alcançaram padrões como:  Vãos em sua estrutura fig.\ref{fig:12}, conexões semelhante a um labirinto ou formação de ilhas de vegetação fig.\ref{fig:25}. Também é possível observar a progressão da formação destes padrões, por exemplo, a formação da estrutura de labirinto a partir da expansão dos vãos, ao se conectarem.
+Após realizar as simulações os autômatos tiveram uma formação de padrões similares à vegetações naturais. As células alcançaram padrões como:  Vãos em sua estrutura (fig.\ref{fig:12}), conexões semelhante a um labirinto (fig.\ref{fig:25}) ou formação de ilhas de vegetação(fig.\ref{fig:04}). Também é possível observar a progressão da formação destes padrões, por exemplo, a formação da estrutura de labirinto a partir da expansão dos vãos, ao se conectarem.
 
 \begin{figure}[ht]
-\hfill
-\begin{minipage}{0.49\linewidth}
-\includegraphics[width=1\linewidth]{../../results/0.0012}
-\caption {Simulação com decaimento atribuído em \emph{0.0012} com um padrão similar à fig.\ref{fig:gapped}}
-\label{fig:12}
-\end{minipage}
-\hfill
-\begin{minipage}{0.49\linewidth}
-\includegraphics[width=1\linewidth]{../../results/0.0025}
-\caption {Simulação com um decaimento maior de \emph{0.0025} com uma formação de labirinto similar à fig.\ref{fig:lab}}
-\label{fig:25}
-\end{minipage}
-\hfill
+	\hfill
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[width=1\linewidth]{../../results/0.0012}
+		\caption {Simulação com decaimento atribuído em \emph{0.0012} com um padrão similar à fig.\ref{fig:gapped}.}
+		\label{fig:12}
+	\end{minipage}
+	\hfill
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[width=1\linewidth]{../../results/0.0025}
+		\caption {Simulação com um decaimento maior de \emph{0.0025} com uma formação de labirinto similar à fig.\ref{fig:lab}.}
+		\label{fig:25}
+	\end{minipage}
+	\hfill
+\end{figure}
+\clearpage
+\begin{figure}[ht]
+	\hfill
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[width=1\linewidth]{../../results/0.004}
+		\caption {Simulação com decaimento de \emph{0.004} com um padrão de pontos ou ilhas de vegetação.}
+		\label{fig:04}
+	\end{minipage}
+	\hfill
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[width=1\linewidth]{../../results/0.0025_less}
+		\caption {Simulação com uma modificação no parâmetro de \emph{plant limit} de \emph{1} para \emph{0.5}, com um decaimento de \emph{0.0025}, formando 					      uma vegetação esparsa mas rasa.}
+		\label{fig:25less} 
+	\end{minipage}
+	\hfill
 \end{figure}
 
 
-\subsection*{Subsection}
+\section*{Conclusão e Discussão}
+ De acordo com os resultados do modelo  é observável os diferentes comportamentos de acordo com a parametrização, que busca refletir valores com equivalência no mundo real, aplicada.
 
-Example text under a subsection. Bulleted lists may be used where appropriate, e.g.
+O fator dominante para influência na formação de uma vegetação de mesmas características foi o decaimento do solo, que em valores maiores representa um clima mais árido com mais perca de água pelo solo, com o aumento deste é possível observar o surgimento de padrões que organizam a vegetação local de forma mais densa, sendo formações vantajosas devido ao potencial de preservar valor de solo, principalmente influenciados pelas regras 2, que permite o retorno de valor de uma vegetação ao solo, e 3, onde o valor de \emph{plant decay} e equivalente ao valor de precipitação, nas simulações, ou menor que o valor de \emph{soil decay}. É demonstrado na diferença dos resultados da fig.\ref{fig:25} e fig.\ref{fig:25less}, que a redução do valor máximo do estado da vegetação de uma célula, sem alterar características de solo ou precipitação, permite o maior uso de solo por células vizinhas, permitindo um crescimento de área mais expansivo mas com baixa densidade comparada aos outros padrões.
 
-\begin{itemize}
-\item First item
-\item Second item
-\end{itemize}
-
-\subsubsection*{Third-level section}
- 
-Topical subheadings are allowed.
-
-\section*{Discussion}
-
-The Discussion should be succinct and must not contain subheadings.
-
-
+O uso deste modelo de Autômato Celular permitiu realizar simulações que se assemelham à realidade, com a possibilidade de modificar características da vegetação, solo e precipitação para definir condições específicas que influenciam no surgimento de padrões auto-organizados.
 
 \bibliography{sample}
 
-\noindent LaTeX formats citations and references automatically using the bibliography records in your .bib file, which you can edit via the project menu. Use the cite command for an inline citation, e.g.  \cite{Hao:gidmaps:2014}.
-
-For data citations of datasets uploaded to e.g. \emph{figshare}, please use the \verb|howpublished| option in the bib entry to specify the platform and the link, as in the \verb|Hao:gidmaps:2014| example in the sample bibliography file.
-
-\section*{Acknowledgements (not compulsory)}
-
-Acknowledgements should be brief, and should not include thanks to anonymous referees and editors, or effusive comments. Grant or contribution numbers may be acknowledged.
-
-\section*{Author contributions statement}
-
-Must include all authors, identified by initials, for example:
-A.A. conceived the experiment(s),  A.A. and B.A. conducted the experiment(s), C.A. and D.A. analysed the results.  All authors reviewed the manuscript. 
-
-\section*{Additional information}
-
-To include, in this order: \textbf{Accession codes} (where applicable); \textbf{Competing interests} (mandatory statement). 
-
-The corresponding author is responsible for submitting a \href{http://www.nature.com/srep/policies/index.html#competing}{competing interests statement} on behalf of all authors of the paper. This statement must be included in the submitted article file.
-
-\begin{table}[ht]
-\centering
-\begin{tabular}{|l|l|l|}
-\hline
-Condition & n & p \\
-\hline
-A & 5 & 0.1 \\
-\hline
-B & 10 & 0.01 \\
-\hline
-\end{tabular}
-\caption{\label{tab:example}Legend (350 words max). Example legend text.}
-\end{table}
-
-Figures and tables can be referenced in LaTeX using the ref command, e.g. Figure \ref{fig:stream} and Table \ref{tab:example}.
+\section*{Apêndices}
+\href{https://github.com/LuizzDutra/Cellular-Automata-UFRPE_2025.2}{GitHub} possuindo o código fonte, versionamento deste documento e arquivos das simulações
 
 \end{document}
