@@ -88,7 +88,7 @@ class Automata:
                         break
                     ne_cell = cell_map[l][c]
                     #Root spread rule
-                    if ne_cell[PL] > 0 and ne_cell[PL] <= PLANT_LIMIT and ne_cell[LT] > 0 and cell[SO] > 0:
+                    if ne_cell[PL] > 0 and ne_cell[PL] <= PLANT_LIMIT and cell[SO] > 0:
                         #f = SOIL_SCALE
                         #soil_calc = SOIL_COST*NE_SOIL_SCALE * (f + (1-f) * ne_cell[PL]/PLANT_LIMIT)
                         a = SOIL_SCALE
