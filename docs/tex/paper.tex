@@ -30,8 +30,8 @@ Example Abstract. Abstract must not include subheadings or citations. Example Ab
 
 \section*{Introdução}
 
-The Introduction section, of referenced text expands on the background  of the work (some overlap with the Abstract is acceptable). The introduction should not include subheadings.
-
+Na natureza são observados diversos padrões de vegetação auto-organizada\cite{{doi:10.1086/342078}}. Esses padrões auto-organizados surgem através das relações entre os organismos \cite{doi.org/10.1111/oik.06373} e fatores externos como alterações climáticas \cite{MERON20161} e características do solo\cite{lejeune2002localized}.
+	
 \begin{figure}[ht]
 \centering
 \textbf{A}
@@ -43,9 +43,64 @@ The Introduction section, of referenced text expands on the background  of the w
 \label{fig:gapped}
 \end{figure}
 
-\section*{Métodos}
+A formação desses padrões é explorada através de abordagens matemáticas como o modelo de Reação-Difusão de Turing\cite{doi:10.1086/342078} e a Teoria do Controle Ótimo\cite{hou2025pattern}. Este trabalho tem como objetivo criar simulações de formação desses padrões através de um Autômato Celular, considerando fatores como a influência de organismos sobre outros, características do solo e principalmente níveis de precipitação.
 
-Topical subheadings are allowed. Authors must ensure that their Methods section includes adequate experimental and characterization data necessary for others in the field to reproduce their work.
+\section*{Metodologia Computacional}
+
+\subsection*{Modelagem}
+Para estabelecer a simulação foi utilizado um Autômato Celular Estocástico Contínuo, com o tamanho de seu espaço definido em \emph{200x200}. Com o objetivo de simular o solo e a vegetação separadamente o autômato possui dois valores de estado. Os estados de vegetação e solo são definidos em valores reais e limitados a partir de parâmetros definidos no modelo, \emph{plant limit} e \emph{soil limit} respectivamente.
+O estado da vegetação possui intervalo  $[0, \infty)$ onde o parâmetro limitador define quando uma célula de vegetação não pode utilizar do solo e aumentar seu valor, um valor de estado igual a zero representa um local sem vegetação, para cada célula de vegetação é denominado um valor de tempo de vida (\emph{lifetime}) em sua criação.
+O estado do solo possui intervalo  $(\infty, \emph{soil limit}]$ onde o parâmetro limitador define o valor máximo de uma célula de solo, um valor de solo menor ou igual a zero representa um solo depletado, o valor do estado do solo inicial é distribuído de maneira pseudoaleatória uniforme no intervalo [0.4, 0.6].
+Para definir um tipo de vegetação e clima específico, o modelo contém outros parâmetros que são utilizados no conjunto de regras do modelo.
+\begin{itemize}
+\item \emph{soil cost}: Custo de solo que denomina a quanto a vegetação utiliza do solo em uma iteração.
+\item\emph{ne soil scale}: Define a escala de custo de solo para células vizinhas.
+\item \emph{soil scale}: Valor base utilizado para realizar uma interpolação linear do \emph{soil cost} de acordo com o estado da vegetação.
+\item \emph{min plant maturity, min soil}: Define o valor mínimo do estado da vegetação da célula e solo vizinho, respectivamente, para reprodução.
+\item \emph{rain interval}: Representa o intervalo de iterações entre precipitações.
+\item \emph{rain amount}: Define a quantidade de precipitação de cada iteração.
+\item\emph{plant decay, soil decay}: Define a degradação do solo com e sem vegetação, respectivamente.
+\item\emph{lifetime$\mu$, lifetime$\sigma$}: Utilizados na distribuição do tempo de vida das células.
+\end{itemize}
+
+\subsection*{Regras}
+O comportamento de cada célula é definido por um conjunto de regras que são aplicadas em toda iteração através dos valores de estados da célula e células vizinhas, que são definidas como toda célula em proximidade imediata, incluindo diagonais. 
+
+Para melhor entendimento o estado da vegetação será representado como \emph{plantState} e o estado do solo como \emph{soilState}.
+O conjunto de regras é definido em:
+
+\begin{itemize}
+\item Toda célula onde \emph{plantState} > 0 e \emph{lifetime > 0}  irá absorver o \emph{soilState} de sua própria célula e de células vizinhas a partir das fórmulas \emph{f(t)}  e \emph{g(t)}, respectivamente:
+
+\emph{let} $t = plantState/plantLimit$
+
+$f(t) = soilCost * ((1 - t)*soilScale + t*1)$
+
+$g(t) = f(t) * neSoilCost$
+
+A função $f(t)$ aplica uma interpolação linear, com o objetivo de gerar um viés a favor de células com estado de vegetação maior, gerando competitividade.
+
+
+\item Uma célula que possui vegetação mas o seu $lifetime == 0$, seu estado será somado ao estado de solo atual em conformidade com o limite do solo, com o objetivo de preservar a qualidade daquela região enquanto permite a mudança de valor e forma das células vizinhas.
+
+\item A cada iteração é aplicado o \emph{soil decay} ou \emph{plant decay} de acordo com o estado da célula.
+
+\item Após o número de iterações definido em \emph{rainInterval}, a precipitação do período é somada ao estado do solo seguindo $soilState = max(soilState + rainInterval * rainAmount, soilLimit)$
+
+\item A possibilidade de fertilização de um solo sem vegetação é definida por 
+
+$plant state_0 >= min plant maturity$
+
+$soil State_1 >= min soil$ $and$ $plantState_1 == 0$
+
+\item Quando um solo é fertilizado seu tempo de vida é definido de maneira pseudoaleatória por uma distribuição normal.
+
+$\mathcal{N}(lifetime\mu, lifetime\sigma^2)$
+
+Esse tempo de vida determinado de forma pseudoaleatória permite introduzir elementos de imprevisibilidade na auto organização das células.
+
+
+\end{itemize}
 
 
 \section*{Resultados}
