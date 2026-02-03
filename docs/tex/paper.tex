@@ -1,7 +1,9 @@
 \documentclass[fleqn,10pt]{wlscirep}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\title{Scientific Reports Title to see here}
+\usepackage{url}
+\graphicspath{ {./images/} }
+\title{Formação de padrões de vegetação através de autômatos celulares}
 
 \author[1*]{Luiz Dutra}
 \affil[1]{Departamento de Estatística e Informática
@@ -26,11 +28,27 @@ Example Abstract. Abstract must not include subheadings or citations. Example Ab
 
 \noindent Please note: Abbreviations should be introduced at the first mention in the main text – no abbreviations lists. Suggested structure of main text (not enforced) is provided below.
 
-\section*{Introduction}
+\section*{Introdução}
 
-The Introduction section, of referenced text\cite{Figueredo:2009dg} expands on the background of the work (some overlap with the Abstract is acceptable). The introduction should not include subheadings.
+The Introduction section, of referenced text expands on the background  of the work (some overlap with the Abstract is acceptable). The introduction should not include subheadings.
 
-\section*{Results}
+\begin{figure}[ht]
+\centering
+\textbf{A}
+\includegraphics[width=0.45\linewidth]{Gapped_Bush_Niger_Nicolas_Barbier}
+\hfill
+\textbf{B}
+\includegraphics[width=0.45\linewidth]{labi}
+\caption{A imagem \textbf{A} mostra uma vegetação do tipo Tiger Bush localizada na Nigéria com vãos em sua estrutura\cite{wiki:pat}. A imagem B mostra outra vegetação na Nigéria possuindo um padrão de labirinto com pontos\cite{doi:10.1086/342078}.}
+\label{fig:gapped}
+\end{figure}
+
+\section*{Métodos}
+
+Topical subheadings are allowed. Authors must ensure that their Methods section includes adequate experimental and characterization data necessary for others in the field to reproduce their work.
+
+
+\section*{Resultados}
 
 Up to three levels of \textbf{subheading} are permitted. Subheadings should not be numbered.
 
@@ -51,9 +69,7 @@ Topical subheadings are allowed.
 
 The Discussion should be succinct and must not contain subheadings.
 
-\section*{Methods}
 
-Topical subheadings are allowed. Authors must ensure that their Methods section includes adequate experimental and characterization data necessary for others in the field to reproduce their work.
 
 \bibliography{sample}
 
@@ -75,13 +91,6 @@ A.A. conceived the experiment(s),  A.A. and B.A. conducted the experiment(s), C.
 To include, in this order: \textbf{Accession codes} (where applicable); \textbf{Competing interests} (mandatory statement). 
 
 The corresponding author is responsible for submitting a \href{http://www.nature.com/srep/policies/index.html#competing}{competing interests statement} on behalf of all authors of the paper. This statement must be included in the submitted article file.
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\linewidth]{stream}
-\caption{Legend (350 words max). Example legend text.}
-\label{fig:stream}
-\end{figure}
 
 \begin{table}[ht]
 \centering

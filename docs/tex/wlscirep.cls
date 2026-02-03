@@ -11,7 +11,7 @@
 % \ProvidesClass{wlscirep}[27/02/2017, v1.3]
 \ProvidesClass{wlscirep}[08/08/2020, v1.4]
 \RequirePackage[utf8]{inputenc}
-\RequirePackage[english]{babel}
+\RequirePackage[portuguese]{babel}
 
 \RequirePackage{ifthen}
 \RequirePackage{calc}
