@@ -20,6 +20,7 @@ LIFETIME_SIGMA = 2
 SOIL_COST = 0.2
 NE_SOIL_SCALE = 1/4
 PLANT_LIMIT = 1
+SOIL_LIMIT = 2
 SOIL_SCALE = 0.25
 MIN_PLANT_MATURITY = 0.25
 MIN_SOIL = 0.0625
@@ -55,6 +56,7 @@ class Automata:
             for j in range(SIZE):
                 if counter % RAIN_INTERVAL == 0:
                     cell_map_buffer[i][j][SO] += RAIN_AMOUNT_PER_TICK * RAIN_INTERVAL
+                    cell_map_buffer[i][j][SO] = min(cell_map_buffer[i][j][SO], SOIL_LIMIT)
                 cell = cell_map[i][j]
                 fertilized = False
                 neighboors  = [
@@ -78,6 +80,7 @@ class Automata:
                             cell_map_buffer[i][j][SO] -= soil_calc
                     else:
                         cell_map_buffer[i][j][SO] += cell_map_buffer[i][j][PL]
+                        cell_map_buffer[i][j][SO] = min(cell_map_buffer[i][j][SO], SOIL_LIMIT)
                         cell_map_buffer[i][j][PL] = 0
                 elif cell[SO] > 0:
                     cell_map_buffer[i][j][SO] -= soil_decay
