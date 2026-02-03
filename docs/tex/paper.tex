@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{url}
+\usepackage{subfig}
 \graphicspath{ {./images/} }
 \title{Formação de padrões de vegetação através de autômatos celulares}
 
@@ -33,14 +34,19 @@ Example Abstract. Abstract must not include subheadings or citations. Example Ab
 Na natureza são observados diversos padrões de vegetação auto-organizada\cite{{doi:10.1086/342078}}. Esses padrões auto-organizados surgem através das relações entre os organismos \cite{doi.org/10.1111/oik.06373} e fatores externos como alterações climáticas \cite{MERON20161} e características do solo\cite{lejeune2002localized}.
 	
 \begin{figure}[ht]
-\centering
-\textbf{A}
-\includegraphics[width=0.45\linewidth]{Gapped_Bush_Niger_Nicolas_Barbier}
 \hfill
-\textbf{B}
-\includegraphics[width=0.45\linewidth]{labi}
-\caption{A imagem \textbf{A} mostra uma vegetação do tipo Tiger Bush localizada na Nigéria com vãos em sua estrutura\cite{wiki:pat}. A imagem B mostra outra vegetação na Nigéria possuindo um padrão de labirinto com pontos\cite{doi:10.1086/342078}.}
+\begin{minipage}{0.45\linewidth}
+\includegraphics[width=\linewidth]{Gapped_Bush_Niger_Nicolas_Barbier}
+\caption {A imagem mostra uma vegetação do tipo Tiger Bush localizada na Nigéria com vãos em sua estrutura\cite{wiki:pat}.}
 \label{fig:gapped}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\linewidth}
+\includegraphics[width=\linewidth]{labi}
+\caption {A imagem mostra outra vegetação na Nigéria possuindo um padrão de labirinto com pontos\cite{doi:10.1086/342078}.}
+\label{fig:lab}
+\end{minipage}
+\hfill
 \end{figure}
 
 A formação desses padrões é explorada através de abordagens matemáticas como o modelo de Reação-Difusão de Turing\cite{doi:10.1086/342078} e a Teoria do Controle Ótimo\cite{hou2025pattern}. Este trabalho tem como objetivo criar simulações de formação desses padrões através de um Autômato Celular, considerando fatores como a influência de organismos sobre outros, características do solo e principalmente níveis de precipitação.
@@ -50,7 +56,7 @@ A formação desses padrões é explorada através de abordagens matemáticas co
 \subsection*{Modelagem}
 Para estabelecer a simulação foi utilizado um Autômato Celular Estocástico Contínuo, com o tamanho de seu espaço definido em \emph{200x200}. Com o objetivo de simular o solo e a vegetação separadamente o autômato possui dois valores de estado. Os estados de vegetação e solo são definidos em valores reais e limitados a partir de parâmetros definidos no modelo, \emph{plant limit} e \emph{soil limit} respectivamente.
 O estado da vegetação possui intervalo  $[0, \infty)$ onde o parâmetro limitador define quando uma célula de vegetação não pode utilizar do solo e aumentar seu valor, um valor de estado igual a zero representa um local sem vegetação, para cada célula de vegetação é denominado um valor de tempo de vida (\emph{lifetime}) em sua criação.
-O estado do solo possui intervalo  $(\infty, \emph{soil limit}]$ onde o parâmetro limitador define o valor máximo de uma célula de solo, um valor de solo menor ou igual a zero representa um solo depletado, o valor do estado do solo inicial é distribuído de maneira pseudoaleatória uniforme no intervalo [0.4, 0.6].
+O estado do solo possui intervalo  $(\infty, \emph{soil limit}]$ onde o parâmetro limitador define o valor máximo de uma célula de solo, um valor de solo menor ou igual a zero representa um solo depletado.
 Para definir um tipo de vegetação e clima específico, o modelo contém outros parâmetros que são utilizados no conjunto de regras do modelo.
 \begin{itemize}
 \item \emph{soil cost}: Custo de solo que denomina a quanto a vegetação utiliza do solo em uma iteração.
@@ -59,7 +65,7 @@ Para definir um tipo de vegetação e clima específico, o modelo contém outros
 \item \emph{min plant maturity, min soil}: Define o valor mínimo do estado da vegetação da célula e solo vizinho, respectivamente, para reprodução.
 \item \emph{rain interval}: Representa o intervalo de iterações entre precipitações.
 \item \emph{rain amount}: Define a quantidade de precipitação de cada iteração.
-\item\emph{plant decay, soil decay}: Define a degradação do solo com e sem vegetação, respectivamente.
+\item\emph{plant decay, soil decay}: Define a degradação, referente à água, do solo, com e sem vegetação, respectivamente.
 \item\emph{lifetime$\mu$, lifetime$\sigma$}: Utilizados na distribuição do tempo de vida das células.
 \end{itemize}
 
@@ -78,16 +84,18 @@ $f(t) = soilCost * ((1 - t)*soilScale + t*1)$
 
 $g(t) = f(t) * neSoilCost$
 
-A função $f(t)$ aplica uma interpolação linear, com o objetivo de gerar um viés a favor de células com estado de vegetação maior, gerando competitividade.
+A função $f(t)$ aplica uma interpolação linear, com o objetivo de gerar um viés a favor de células com estado de vegetação maior, gerando competitividade. Na função $g(t)$ é aplicada a escala de custo para solos vizinhos, simulando o quão eficiente a vegetação é em utilizar do solo vizinho em comparação ao seu\cite{meron2019vegetation}.
 
 
 \item Uma célula que possui vegetação mas o seu $lifetime == 0$, seu estado será somado ao estado de solo atual em conformidade com o limite do solo, com o objetivo de preservar a qualidade daquela região enquanto permite a mudança de valor e forma das células vizinhas.
 
 \item A cada iteração é aplicado o \emph{soil decay} ou \emph{plant decay} de acordo com o estado da célula.
 
-\item Após o número de iterações definido em \emph{rainInterval}, a precipitação do período é somada ao estado do solo seguindo $soilState = max(soilState + rainInterval * rainAmount, soilLimit)$
+\item Após o número de iterações definido em \emph{rainInterval}, a precipitação do período é somada ao estado do solo seguindo:
 
-\item A possibilidade de fertilização de um solo sem vegetação é definida por 
+ $soilState = max(soilState + rainInterval * rainAmount, soilLimit)$
+
+\item A possibilidade de fertilização de um solo sem vegetação é definida por:
 
 $plant state_0 >= min plant maturity$
 
@@ -97,15 +105,33 @@ $soil State_1 >= min soil$ $and$ $plantState_1 == 0$
 
 $\mathcal{N}(lifetime\mu, lifetime\sigma^2)$
 
-Esse tempo de vida determinado de forma pseudoaleatória permite introduzir elementos de imprevisibilidade na auto organização das células.
+Esse tempo de vida determinado de forma pseudoaleatória permite introduzir elementos de imprevisibilidade na auto-organização das células.
 
 
 \end{itemize}
 
 
 \section*{Resultados}
+As simulações foram realizadas com 10000 iterações cada, com uma população de 5 células com \emph{plant state} igual a 0.5 e \emph{lifetime} igual a 10, em posições aleatórias,  o valor do estado do solo inicial foi distribuído de maneira aleatória uniforme no intervalo $[0.4, 0.6]$,  utilizando a mesma seed do gerador de números pseudoaleatórios com diferentes níveis de decaimento do solo a fim de analisar a formação de diferentes padrões de vegetação de acordo com estas condições.
 
-Up to three levels of \textbf{subheading} are permitted. Subheadings should not be numbered.
+Após realizar as simulações os autômatos tiveram uma formação de padrões similares à vegetações naturais. As células alcançaram padrões como:  Vãos em sua estrutura fig.\ref{fig:12}, conexões semelhante a um labirinto ou formação de ilhas de vegetação fig.\ref{fig:25}. Também é possível observar a progressão da formação destes padrões, por exemplo, a formação da estrutura de labirinto a partir da expansão dos vãos, ao se conectarem.
+
+\begin{figure}[ht]
+\hfill
+\begin{minipage}{0.49\linewidth}
+\includegraphics[width=1\linewidth]{../../results/0.0012}
+\caption {Simulação com decaimento atribuído em \emph{0.0012} com um padrão similar à fig.\ref{fig:gapped}}
+\label{fig:12}
+\end{minipage}
+\hfill
+\begin{minipage}{0.49\linewidth}
+\includegraphics[width=1\linewidth]{../../results/0.0025}
+\caption {Simulação com um decaimento maior de \emph{0.0025} com uma formação de labirinto similar à fig.\ref{fig:lab}}
+\label{fig:25}
+\end{minipage}
+\hfill
+\end{figure}
+
 
 \subsection*{Subsection}
 
