@@ -15,9 +15,9 @@ Universidade Federal Rural de Pernambuco – Recife, PE – Brasil}
 
 
 \begin{abstract}
-Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations.
+Padrões formados por vegetações de diversos tipos são um fenômeno importante para a sobrevivência destes organismos, mostrando uma capacidade de auto-organização vantajosa. Este trabalho propõe um modelo de autômato celular para analisar a formação e influência de variáveis no surgimento destes padrões, considerando características da vegetação, solo e clima no conjunto de regras do modelo. Os resultados do autômato celular mostram capacidade de replicar estruturas de vegetação semelhantes a exemplos reais, considerando diferentes relações entre características da vegetação e níveis de precipitação.
 \end{abstract}
-\keywords{Keyword1, Keyword2, Keyword3}
+\keywords{Autômatos Celulares, Padrões de Vegetação, Auto-Organização, Padrões de Turing}
 
 
 \begin{document}
@@ -51,7 +51,7 @@ Na natureza são observados diversos padrões de vegetação auto-organizada\cit
 \hfill
 \end{figure}
 
-A formação desses padrões é explorada através de abordagens matemáticas como o modelo de Reação-Difusão de Turing\cite{doi:10.1086/342078} e a Teoria do Controle Ótimo\cite{hou2025pattern}. Este trabalho tem como objetivo criar simulações de formação desses padrões através de um Autômato Celular, considerando fatores como a influência de organismos sobre outros, características do solo e principalmente níveis de precipitação.
+A formação destes padrões é explorada através de abordagens matemáticas como o modelo de Reação-Difusão de Turing\cite{doi:10.1086/342078} e a Teoria do Controle Ótimo\cite{hou2025pattern}. Este trabalho tem como objetivo criar simulações de formação destes padrões através de um Autômato Celular, considerando fatores como a influência de organismos sobre outros, características do solo e principalmente níveis de precipitação.
 
 \section*{Metodologia Computacional}
 
@@ -64,7 +64,7 @@ Para definir um tipo de vegetação e clima específico, o modelo contém outros
 \item \emph{soil cost}: Custo de solo que denomina a quanto a vegetação utiliza do solo em uma iteração.
 \item\emph{ne soil scale}: Define a escala de custo de solo para células vizinhas.
 \item \emph{soil scale}: Valor base utilizado para realizar uma interpolação linear do \emph{soil cost} de acordo com o estado da vegetação.
-\item \emph{min plant maturity, min soil}: Define o valor mínimo do estado da vegetação da célula e solo vizinho, respectivamente, para reprodução.
+\item \emph{min plant maturity, min soil}: Define o valor mínimo do estado da vegetação da célula e do solo vizinho, respectivamente, para reprodução.
 \item \emph{rain interval}: Representa o intervalo de iterações entre precipitações.
 \item \emph{rain amount}: Define a quantidade de precipitação de cada iteração.
 \item\emph{plant decay, soil decay}: Define a degradação, referente à água, do solo, com e sem vegetação, respectivamente.
@@ -74,7 +74,7 @@ Para definir um tipo de vegetação e clima específico, o modelo contém outros
 \subsection*{Regras}
 O comportamento de cada célula é definido por um conjunto de regras que são aplicadas em toda iteração através dos valores de estados da célula e células vizinhas, que são definidas como toda célula em proximidade imediata, incluindo diagonais. 
 
-Para melhor entendimento o estado da vegetação será representado como \emph{plantState} e o estado do solo como \emph{soilState}.
+Para melhor entendimento, o estado da vegetação será representado como \emph{plantState} e o estado do solo como \emph{soilState}.
 O conjunto de regras é definido em:
 
 \begin{enumerate}
@@ -95,13 +95,13 @@ A função $f(t)$ aplica uma interpolação linear, com o objetivo de gerar um v
 
 \item Após o número de iterações definido em \emph{rainInterval}, a precipitação do período é somada ao estado do solo seguindo:
 
- $soilState = max(soilState + rainInterval * rainAmount, soilLimit)$
+ $soilState = min(soilState + rainInterval * rainAmount, soilLimit)$
 
 \item A possibilidade de fertilização de um solo sem vegetação é definida por:
 
-$plant state_0 >= min plant maturity$
+$plant state_0 >= minPlantMaturity$
 
-$soil State_1 >= min soil$ $and$ $plantState_1 == 0$
+$soil State_1 >= minSoil$ $and$ $plantState_1 == 0$
 
 \item Quando um solo é fertilizado seu tempo de vida é definido de maneira pseudoaleatória por uma distribuição normal.
 
@@ -114,7 +114,7 @@ Esse tempo de vida determinado de forma pseudoaleatória permite introduzir elem
 
 
 \section*{Resultados}
-As simulações foram realizadas com 10000 iterações cada, com uma população de 5 células com \emph{plant state} igual a 0.5 e \emph{lifetime} igual a 10, em posições aleatórias,  o valor do estado do solo inicial foi distribuído de maneira aleatória uniforme no intervalo $[0.4, 0.6]$,  utilizando a mesma seed do gerador de números pseudoaleatórios com diferentes níveis de decaimento do solo a fim de analisar a formação de diferentes padrões de vegetação de acordo com estas condições. Todas as vegetações de cada simulação possuem as mesmas características e decaimento de solo com vegetação de \emph{0.0002}, equivalente à quantidade de precipitação por iteração.
+As simulações foram realizadas com 10000 iterações cada, com uma população de 5 células com \emph{plant state} igual a 0.5 e \emph{lifetime} igual a 10, em posições aleatórias,  o valor do estado do solo inicial foi distribuído de maneira aleatória uniforme no intervalo $[0.4, 0.6]$,  utilizando a mesma seed do gerador de números pseudoaleatórios com diferentes níveis de decaimento do solo a fim de analisar a formação de diferentes padrões de vegetação de acordo com estas condições. Todas as vegetações de cada simulação possuem as mesmas características e decaimento de solo com vegetação de \emph{0.0002}, equivalente à quantidade de precipitação por iteração que possui um intervalo de 400 iterações entre cada precipitação, aplicando o valor acumulado ao solo, como definido na regra \emph{4}.
 
 Após realizar as simulações os autômatos tiveram uma formação de padrões similares à vegetações naturais. As células alcançaram padrões como:  Vãos em sua estrutura (fig.\ref{fig:12}), conexões semelhante a um labirinto (fig.\ref{fig:25}) ou formação de ilhas de vegetação(fig.\ref{fig:04}). Também é possível observar a progressão da formação destes padrões, por exemplo, a formação da estrutura de labirinto a partir da expansão dos vãos, ao se conectarem.
 
@@ -152,9 +152,9 @@ Após realizar as simulações os autômatos tiveram uma formação de padrões 
 
 
 \section*{Conclusão e Discussão}
- De acordo com os resultados do modelo  é observável os diferentes comportamentos de acordo com a parametrização, que busca refletir valores com equivalência no mundo real, aplicada.
+ De acordo com os resultados do modelo, é observável os diferentes comportamentos de acordo com a parametrização, que busca refletir valores com equivalência no mundo real, aplicada.
 
-O fator dominante para influência na formação de uma vegetação de mesmas características foi o decaimento do solo, que em valores maiores representa um clima mais árido com mais perca de água pelo solo, com o aumento deste é possível observar o surgimento de padrões que organizam a vegetação local de forma mais densa, sendo formações vantajosas devido ao potencial de preservar valor de solo, principalmente influenciados pelas regras 2, que permite o retorno de valor de uma vegetação ao solo, e 3, onde o valor de \emph{plant decay} e equivalente ao valor de precipitação, nas simulações, ou menor que o valor de \emph{soil decay}. É demonstrado na diferença dos resultados da fig.\ref{fig:25} e fig.\ref{fig:25less}, que a redução do valor máximo do estado da vegetação de uma célula, sem alterar características de solo ou precipitação, permite o maior uso de solo por células vizinhas, permitindo um crescimento de área mais expansivo mas com baixa densidade comparada aos outros padrões.
+O fator dominante para influência na formação de uma vegetação de mesmas características foi o decaimento do solo, que em valores maiores representa um clima mais árido com mais perda de água pelo solo; com o aumento deste é possível observar o surgimento de padrões que organizam a vegetação local de forma mais densa, sendo formações vantajosas devido ao potencial de preservar o valor de solo, principalmente influenciados pela regra 2, que permite o retorno de valor de uma vegetação ao solo, e 3, onde o valor de \emph{plant decay} e equivalente ao valor de precipitação, nas simulações, ou menor que o valor de \emph{soil decay}. É demonstrado na diferença dos resultados da fig.\ref{fig:25} e fig.\ref{fig:25less}, que a redução do valor máximo do estado da vegetação de uma célula, sem alterar características de solo ou precipitação, permite o maior uso de solo por células vizinhas, permitindo um crescimento de área mais expansivo mas com baixa densidade comparada aos outros padrões.
 
 O uso deste modelo de Autômato Celular permitiu realizar simulações que se assemelham à realidade, com a possibilidade de modificar características da vegetação, solo e precipitação para definir condições específicas que influenciam no surgimento de padrões auto-organizados.
 
